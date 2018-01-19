@@ -6,46 +6,41 @@
 
 namespace York8\POA;
 
-use Traversable;
-use TypeError;
-
 /**
- * 执行生成器
- * @param Traversable|array $it
- * @return mixed|null
- * @throws TypeError
+ * 包装执行中间件（或 callable 对象集合）返回的一个闭包函数用于执行
+ * @param array $middlewares
+ * @return \Closure
  */
-function co($it)
+function co(...$middlewares)
 {
-    if (!is_array($it) && !($it instanceof Traversable)) {
-        throw new TypeError("Not Traversable");
-    }
-    $ret = NULL;
-    foreach ($it as $o) {
-        if ($o instanceof \Generator) {
-            co($o);
-        } else {
-            $ret = $o;
+    return function (...$params) use ($middlewares) {
+        $genStack = [];
+        foreach ($middlewares as &$m) {
+            if (is_callable($m)) {
+                $r = call_user_func_array($m, $params);
+                if ($r instanceof \Generator) {
+                    $r->current();
+                    $genStack[] = $r;
+                }
+            } else if ($m instanceof \Generator) {
+                $m->current();
+                $genStack[] = $m;
+            } else if (is_array($m) || $m instanceof \Traversable) {
+                co(...$m)(...$params);
+            }
         }
-    }
-    if ($it instanceof \Generator) {
-        $ret = $it->getReturn();
-    }
-    return $ret;
-}
 
-/**
- * 将中间件组合成 Generator 函数
- * @param callable[] $middlewares
- * @return callable
- */
-function compose($middlewares)
-{
-    return function ($next, ...$rest) use ($middlewares) {
-        $i = count($middlewares);
-        while ($i--) {
-            $next = call_user_func($middlewares[$i], $next, ...$rest);
+        while (($l = count($genStack)) > 0) {
+            /**
+             * @var \Generator $g
+             */
+            $g = array_pop($genStack);
+            if ($g->valid()) {
+                $g->next();
+                array_unshift($genStack, $g);
+            } else {
+                unset($g);
+            }
         }
-        return $next;
     };
 }

@@ -4,5 +4,4 @@
  * Date: 2017-06-23 11:33
  */
 
-require 'functions.php';
-require 'co.php';
+require __DIR__ . '/utils/co.php';

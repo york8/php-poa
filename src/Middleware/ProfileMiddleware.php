@@ -6,19 +6,16 @@
 
 namespace York8\POA\Middleware;
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use York8\POA\Context;
 
 class ProfileMiddleware implements MiddlewareInterface
 {
-    use MiddlewareTrait;
-
     /** {@inheritdoc} */
-    public function handle($next, ServerRequestInterface $request, ResponseInterface $response)
+    public function __invoke(Context $context)
     {
         $start = microtime(true) * 1000;
-        yield $next;
+        yield;
         $end = microtime(true) * 1000;
-        echo "<br/>use time: ", $end - $start, 'ms';
+        echo "\nuse time: ", $end - $start, "ms\n";
     }
 }

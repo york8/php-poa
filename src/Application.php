@@ -6,25 +6,63 @@
 
 namespace York8\POA;
 
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\NullLogger;
+use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
+use React\Http\Response;
+use React\Http\Server;
 
 class Application
 {
-    /** @var array APP 直接使用的中间件集合 */
+    /**
+     * @var LoopInterface
+     */
+    private $loop;
+
+    /**
+     * @var callable[]
+     */
     private $middlewares = [];
 
-    function useMiddleware(callable $gen)
+    use LoggerTrait;
+
+    public function __construct()
     {
-        if (isMiddleware($gen)) {
-            $this->middlewares[] = $gen;
-        }
-        return $this;
+        $this->logger = new NullLogger();
+        $this->loop = Factory::create();
     }
 
-    function run(ServerRequestInterface $request, ResponseInterface $response)
+    public function listen($uri, array $context = [])
     {
-        $gen = compose($this->middlewares);
-        co($gen(null, $request, $response));
+        $server = new Server([$this, 'callback']);
+        $socket = new \React\Socket\Server($uri, $this->loop, $context);
+        $server->listen($socket);
+        $this->loop->run();
+    }
+
+    public function callback(ServerRequestInterface $request)
+    {
+        $response = new Response(200, [
+            'Content-Type' => 'text/plain; charset=utf-8',
+        ], '');
+
+        try {
+            $context = new Context($request, $response);
+            $context->setLogger($this->getLogger());
+            co(...$this->middlewares)($context);
+            return $context->getResponse();
+        } catch (\Throwable $exception) {
+            $this->logger->warning($exception->getMessage(), ['exception' => $exception]);
+            $response = $response->withStatus(500);
+            $response->getBody()->write('Internal Server Error');
+            return $response;
+        }
+    }
+
+    public function use (callable $middleware)
+    {
+        $this->middlewares[] = $middleware;
+        return $this;
     }
 }

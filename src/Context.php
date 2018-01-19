@@ -27,6 +27,8 @@ class Context
 
     private $rspCookies = [];
 
+    use LoggerTrait;
+
     /**
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
