@@ -2,9 +2,6 @@
 
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Software License][ico-license]](LICENSE.md)
-[![Build Status][ico-travis]][link-travis]
-[![Coverage Status][ico-scrutinizer]][link-scrutinizer]
-[![Quality Score][ico-code-quality]][link-code-quality]
 [![Total Downloads][ico-downloads]][link-downloads]
 
 POA（Php cOroutine based Application framework）Web框架，灵感来自于 Node.js 的 KOA 框架，基于 React-PHP，
@@ -47,15 +44,7 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 
 [ico-version]: https://img.shields.io/packagist/v/york8/poa.svg?style=flat-square
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
-[ico-travis]: https://img.shields.io/travis/york8/poa/master.svg?style=flat-square
-[ico-scrutinizer]: https://img.shields.io/scrutinizer/coverage/g/york8/poa.svg?style=flat-square
-[ico-code-quality]: https://img.shields.io/scrutinizer/g/york8/poa.svg?style=flat-square
 [ico-downloads]: https://img.shields.io/packagist/dt/york8/poa.svg?style=flat-square
 
 [link-packagist]: https://packagist.org/packages/york8/poa
-[link-travis]: https://travis-ci.org/york8/poa
-[link-scrutinizer]: https://scrutinizer-ci.com/g/york8/poa/code-structure
-[link-code-quality]: https://scrutinizer-ci.com/g/york8/poa
 [link-downloads]: https://packagist.org/packages/york8/poa
-[link-author]: https://github.com/hansott
-[link-contributors]: ../../contributors
