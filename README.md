@@ -1,9 +1,8 @@
 # POA
 
-[![Latest Stable Version](https://poser.pugx.org/york8/poa/v/stable)](https://packagist.org/packages/york8/poa) 
-[![Total Downloads](https://poser.pugx.org/york8/poa/downloads)](https://packagist.org/packages/york8/poa) 
-[![Latest Unstable Version](https://poser.pugx.org/york8/poa/v/unstable)](https://packagist.org/packages/york8/poa) 
-[![License](https://poser.pugx.org/york8/poa/license)](https://packagist.org/packages/york8/poa)
+[![Latest Version on Packagist][ico-version]][link-packagist]
+[![Software License][ico-license]](LICENSE)
+[![Total Downloads][ico-downloads]][link-downloads]
 
 POA（Php cOroutine based Application framework）Web框架，灵感来自于 Node.js 的 KOA 框架，基于 React-PHP，
 使用 PHP 的生成器来实现中间件，轻松的组合管理多个中间件之间的协作。
@@ -24,14 +23,12 @@ $app = new Application();
 
 // 2. define the route rules
 $router = new RouterMiddleware(function (Context $context) {
-    $response = $context->getResponse()->withStatus(404);
-    $response->getBody()->write('Not Found!');
-    $context->setResponse($response);
+    $context->statusCode(404)->send('Not Found');
 });
 $router->get(
     '/test$',
     function (Context $context) {
-        $context->getResponse()->getBody()->write('Hello, test');
+        $context->send('Hello, test');
     }
 );
 
@@ -41,3 +38,13 @@ $app->use(new ProfileMiddleware())->use($router);
 // 4. listen and start the server
 $app->listen(8088);
 ```
+
+## License
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+
+[ico-version]: https://img.shields.io/packagist/v/york8/poa.svg?style=flat-square
+[ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
+[ico-downloads]: https://img.shields.io/packagist/dt/york8/poa.svg?style=flat-square
+
+[link-packagist]: https://packagist.org/packages/york8/poa
+[link-downloads]: https://packagist.org/packages/york8/poa

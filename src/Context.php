@@ -8,7 +8,7 @@ namespace York8\POA;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use York8\Router\HandlerInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * 请求处理过程的上下文对象，中间件接收的输入参数，里面包含了请求、响应对象及一些有用的方法
@@ -21,11 +21,6 @@ class Context
 
     /** @var ResponseInterface 响应对象 */
     private $response;
-
-    /** @var HandlerInterface 处理器对象 */
-    private $handler;
-
-    private $rspCookies = [];
 
     use LoggerTrait;
 
@@ -72,22 +67,6 @@ class Context
     }
 
     /**
-     * @return HandlerInterface
-     */
-    public function getHandler(): HandlerInterface
-    {
-        return $this->handler;
-    }
-
-    /**
-     * @param HandlerInterface $handler
-     */
-    public function setHandler(HandlerInterface $handler)
-    {
-        $this->handler = $handler;
-    }
-
-    /**
      * 获取请求头
      * @param $name
      * @param null $defaultValue
@@ -111,23 +90,97 @@ class Context
     }
 
     /**
-     * 获取请求 cookie
-     * @param string $name
-     * @param string $defaultValue
-     * @return string
+     * 获取请求头或设置响应头
+     * @param string $name 头部名称
+     * @param null $value 值，null 表示删除
+     * @return Context|\string[]
      */
-    public function getCookie($name, $defaultValue = null)
+    public function header($name, $value = null)
     {
-        return $this->request->getCookieParams()[$name] ?: $defaultValue;
+        if (func_num_args() < 2) {
+            return $this->request->getHeader($name);
+        }
+        if (is_null($value)) {
+            $this->response->withoutHeader($name);
+        } else {
+            $this->setHeader($name, $value);
+        }
+        return $this;
     }
 
-    public function setCookie($name, $value)
+    /**
+     * 获取请求所有查询参数
+     * @return array
+     */
+    public function getQueryParams()
     {
-        if (is_null($value) || $value === '') {
-            unset($this->rspCookies[$name]);
-        } else {
-            $this->rspCookies[$name] = $value;
+        return $this->request->getQueryParams();
+    }
+
+    /**
+     * 获取指定请求查询参数
+     * @param $name
+     * @return mixed
+     */
+    public function getQueryParam($name)
+    {
+        return @$this->getQueryParams()[$name];
+    }
+
+    /**
+     * 获取请求体参数
+     * @return array|null|object
+     */
+    public function getParsedBody()
+    {
+        return $this->request->getParsedBody();
+    }
+
+    /**
+     * 获取或设置响应码，不传递任何参数表示获取当前的响应码
+     * @param null $code 待设置的响应码
+     * @param null $reasonPhrase 响应码说明
+     * @return Context|int
+     */
+    public function statusCode($code = null, $reasonPhrase = null)
+    {
+        if (func_num_args() < 1 || empty($code)) {
+            return $this->response->getStatusCode();
         }
+        $this->response = $this->response->withStatus($code, $reasonPhrase);
+        return $this;
+    }
+
+    /**
+     * 清空响应输出流
+     * @return $this
+     */
+    public function clear()
+    {
+        $rsp = $this->response;
+        $body = $rsp->getBody();
+        if ($body->isSeekable()) {
+            $body->rewind();
+            $body->write("\0\0");
+            $body->rewind();
+        }
+        return $this;
+    }
+
+    /**
+     * 发送响应内容
+     * @param string|StreamInterface $content 内容
+     * @return $this
+     */
+    public function send($content)
+    {
+        if (is_string($content)) {
+            $this->clear();
+            $this->response->getBody()->write($content);
+        } else if ($content instanceof StreamInterface) {
+            $this->response = $this->response->withBody($content);
+        }
+
         return $this;
     }
 }
