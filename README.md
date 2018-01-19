@@ -5,9 +5,8 @@
 [![Latest Unstable Version](https://poser.pugx.org/york8/poa/v/unstable)](https://packagist.org/packages/york8/poa) 
 [![License](https://poser.pugx.org/york8/poa/license)](https://packagist.org/packages/york8/poa)
 
-POA(Php cOroutine based Application framework)是一个Web框架，
-灵感来自于 Node.js 的 KOA 框架，基于 React-PHP 框架作为 Http 服务器，
-使用 PHP 的生成器函数来实现中间件，可以轻松的组合管理多个中间件之间的协作。
+POA（Php cOroutine based Application framework）Web框架，灵感来自于 Node.js 的 KOA 框架，基于 React-PHP，
+使用 PHP 的生成器来实现中间件，轻松的组合管理多个中间件之间的协作。
 
 ## 作者
 

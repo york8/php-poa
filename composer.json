@@ -1,8 +1,15 @@
 {
   "name": "york8/poa",
-  "description": "PHP Coroutine based Application framework（基于 PHP 协程的应用框架）",
+  "description": "POA Web框架灵感来自于Node.js的KOA框架，基于React-PHP，使用生成器来实现中间件，轻松的组合管理多个中间件之间的协作",
   "type": "library",
   "license": "MIT",
+  "keywords": [
+    "koa",
+    "framework",
+    "generator",
+    "react-php",
+    "middleware"
+  ],
   "authors": [
     {
       "name": "York",
@@ -19,7 +26,7 @@
     ]
   },
   "require": {
-    "php": ">=7.0.0",
+    "php": ">=7.1.0",
     "psr/http-message": "~1.0",
     "york8/router": "~0.1.0",
     "react/event-loop": "^0.4.3",
@@ -27,6 +34,5 @@
     "psr/log": "^1.0"
   },
   "require-dev": {
-    "monolog/monolog": "^1.23"
   }
 }
