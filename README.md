@@ -41,3 +41,21 @@ $app->use(new ProfileMiddleware())->use($router);
 // 4. listen and start the server
 $app->listen(8088);
 ```
+
+## License
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+
+[ico-version]: https://img.shields.io/packagist/v/york8/poa.svg?style=flat-square
+[ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
+[ico-travis]: https://img.shields.io/travis/york8/poa/master.svg?style=flat-square
+[ico-scrutinizer]: https://img.shields.io/scrutinizer/coverage/g/york8/poa.svg?style=flat-square
+[ico-code-quality]: https://img.shields.io/scrutinizer/g/york8/poa.svg?style=flat-square
+[ico-downloads]: https://img.shields.io/packagist/dt/york8/poa.svg?style=flat-square
+
+[link-packagist]: https://packagist.org/packages/york8/poa
+[link-travis]: https://travis-ci.org/york8/poa
+[link-scrutinizer]: https://scrutinizer-ci.com/g/york8/poa/code-structure
+[link-code-quality]: https://scrutinizer-ci.com/g/york8/poa
+[link-downloads]: https://packagist.org/packages/york8/poa
+[link-author]: https://github.com/hansott
+[link-contributors]: ../../contributors
