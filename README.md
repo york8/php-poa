@@ -26,21 +26,41 @@ $router = new RouterMiddleware(function (Context $context) {
     $context->statusCode(404)->send('Not Found');
 });
 $router->get(
-    '/test$',
+    '/foo/bar$',
     function (Context $context) {
-        $context->send('Hello, test');
+        $context->send('Hello, ' . $context->getRequest()->getUri());
+    }
+)->get(
+    '/foo/exception',
+    function () {
+        throw new Exception('I throw an exception just for fun, haha!');
     }
 );
 
 // 3. use middlewares what you need
-$app->use(new ProfileMiddleware())->use($router);
+$app->use(new ProfileMiddleware())
+    ->use(function (Context $context) {
+        $uri = $context->getRequest()->getUri();
+        if ($uri->getPath() === '/bar') {
+            $context->send('you fire.');
+            return false;
+        }
+        return null;
+    })
+    ->use($router)
+    ->useErrorMiddleware(function (Throwable $throwable, Context $context) {
+        // 错误/异常 处理中间件
+        $msg = $throwable->getMessage();
+        fwrite(STDERR, $msg . "\n");
+        $context->statusCode(500)->send('Oh, No! ' . $msg);
+    });
 
 // 4. listen and start the server
 $app->listen(8088);
 ```
 
 ## License
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+The MIT License (MIT). Please see [License File](LICENSE) for more information.
 
 [ico-version]: https://img.shields.io/packagist/v/york8/poa.svg?style=flat-square
 [ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square
