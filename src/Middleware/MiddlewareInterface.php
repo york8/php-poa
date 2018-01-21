@@ -17,9 +17,7 @@ use York8\POA\Context;
 interface MiddlewareInterface
 {
     /**
-     * 调用 handle
      * @param Context $context 请求上下文
-     * @return
      */
     public function __invoke(Context $context);
 }
