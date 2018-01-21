@@ -22,6 +22,11 @@ class Context
     /** @var ResponseInterface 响应对象 */
     private $response;
 
+    /**
+     * @var mixed[] 上下文相关的属性参数
+     */
+    private $attributes = [];
+
     use LoggerTrait;
 
     /**
@@ -182,5 +187,41 @@ class Context
         }
 
         return $this;
+    }
+
+    /**
+     * 获取或设置上下文属性参数
+     * @param string $name 属性名称
+     * @param mixed $value 属性值
+     * @return $this|mixed
+     */
+    public function attr($name, $value = null)
+    {
+        if (func_num_args() < 2) {
+            return @$this->attributes[$name];
+        } else {
+            if (is_null($value)) {
+                unset($this->attributes[$name]);
+            } else {
+                $this->attributes[$name] = $value;
+            }
+            return $this;
+        }
+    }
+
+    /**
+     * @return \mixed[]
+     */
+    public function getAttributes(): array
+    {
+        return $this->attributes;
+    }
+
+    /**
+     * @param \mixed[] $attributes
+     */
+    public function setAttributes(array $attributes)
+    {
+        $this->attributes = $attributes;
     }
 }

@@ -85,7 +85,7 @@ class Application
     }
 
     /**
-     * 使用请求处理中间件，中间件入参是上下文对象 Context
+     * （注册）使用请求处理中间件，中间件入参是上下文对象 Context。
      * @param callable $middleware
      * @return $this
      */
@@ -96,7 +96,10 @@ class Application
     }
 
     /**
-     * 使用错误处理中间件，中间件入参是异常对象 Throwable，以及一个可选的上下文对象 Context
+     * （注册）使用全局错误处理中间件，中间件入参是异常对象 Throwable，以及一个可选的上下文对象 Context
+     * <p>这里的错误处理中间件用来处理PHP程序发出的错误报告（errop_reporting）和全局未被捕获处理的异常；
+     * <p>对于连接请求处理过程中的异常处理可以通过请求处生成器中间件来捕获处理，如下
+     * <p>try { yield; } catch(...) { ... }
      * @param callable $middleware
      * @return $this
      */

@@ -39,6 +39,15 @@ $router->get(
 
 // 3. use middlewares what you need
 $app->use(new ProfileMiddleware())
+    // simple error handle middleware
+    ->use(function (Context $context) {
+        try {
+            yield;
+        } catch (Exception $e) {
+            fwrite(STDERR, 'EXP: ' . $e->getMessage() . "\n");
+            $context->statusCode(500)->send('Exp: ' . $e->getMessage());
+        }
+    })
     ->use(function (Context $context) {
         $uri = $context->getRequest()->getUri();
         if ($uri->getPath() === '/bar') {
@@ -48,11 +57,14 @@ $app->use(new ProfileMiddleware())
         return null;
     })
     ->use($router)
+    // global error handle middleware
     ->useErrorMiddleware(function (Throwable $throwable, Context $context) {
-        // 错误/异常 处理中间件
+        // handle global exception
         $msg = $throwable->getMessage();
-        fwrite(STDERR, $msg . "\n");
-        $context->statusCode(500)->send('Oh, No! ' . $msg);
+        fwrite(STDERR, 'Global Exp: ' . $msg . "\n");
+        if ($context) {
+            $context->statusCode(500)->send('Oh, No! ' . $msg);
+        }
     });
 
 // 4. listen and start the server

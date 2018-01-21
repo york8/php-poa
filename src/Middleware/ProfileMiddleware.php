@@ -16,6 +16,6 @@ class ProfileMiddleware implements MiddlewareInterface
         $start = microtime(true) * 1000;
         yield;
         $end = microtime(true) * 1000;
-        echo "\nuse time: ", $end - $start, "ms\n";
+        echo "Profile: use time: ", $end - $start, "ms\n";
     }
 }
