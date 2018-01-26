@@ -21,10 +21,15 @@ namespace York8\POA;
  */
 function co(...$middlewares)
 {
+    /**
+     * @param array $params
+     * @return false|null
+     * @throws \Throwable
+     */
     return function (...$params) use ($middlewares) {
         $discontinue = null; // 是否中止
-        $genStack = [];
-        $exception = null;
+        $genStack = []; // 生成器栈，用于生成器的回溯过程
+        $exception = null; // 暂存处理过程中的遇到的异常，避免提前终端处理
 
         try {
             while (count($middlewares) > 0) {
@@ -50,14 +55,6 @@ function co(...$middlewares)
                             break;
                         }
                     }
-                } else if (is_array($m) || $m instanceof \Traversable) {
-                    // 中间件构成的子系统，只有里面的所有逻辑执行完后才会进入下一个中间件
-                    if (co(...$m)(...$params) === false) {
-                        // 子系统返回 false 提前中止
-                        // 不能直接 return，需要确保已经入栈的生成器执行收尾操作
-                        $discontinue = true;
-                        break;
-                    }
                 } else if (is_callable($m)) {
                     $r = call_user_func_array($m, $params);
                     if ($r instanceof \Generator) {
@@ -65,6 +62,14 @@ function co(...$middlewares)
                         array_unshift($middlewares, $r);
                     } else if ($r === false) {
                         // 这是一个普通函数调用并且显示返回了 false，结束中间件的执行
+                        // 不能直接 return，需要确保已经入栈的生成器执行收尾操作
+                        $discontinue = true;
+                        break;
+                    }
+                } else if (is_array($m) || $m instanceof \Traversable) {
+                    // 中间件构成的子系统，只有里面的所有逻辑执行完后才会进入下一个中间件
+                    if (co(...$m)(...$params) === false) {
+                        // 子系统返回 false 提前中止
                         // 不能直接 return，需要确保已经入栈的生成器执行收尾操作
                         $discontinue = true;
                         break;
@@ -93,17 +98,22 @@ function co(...$middlewares)
                     } else {
                         $g->next();
                     }
+                    array_unshift($genStack, $g);
                 } catch (\Throwable $throwable) {
+                    // 抛出异常的生成器不再重新入栈
                     $exception = $throwable;
                 }
-                array_unshift($genStack, $g);
             } else {
+                $result = $g->getReturn();
+                if ($result === false && $discontinue !== true) {
+                    $discontinue = false;
+                }
                 unset($g);
             }
         }
 
         if ($exception) {
-            // 重新抛出之前暂存的异常
+            // 暂存的异常未被处理，重新抛出
             throw $exception;
         }
         return $discontinue ? false : null;

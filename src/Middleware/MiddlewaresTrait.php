@@ -6,6 +6,7 @@
 
 namespace York8\POA\Middleware;
 
+use York8\POA\Context;
 use function York8\POA\co;
 
 /**
@@ -23,8 +24,19 @@ Trait MiddlewaresTrait
         return $this;
     }
 
-    public function __invoke(...$params)
+    public function __invoke(Context $context)
     {
-        return co(...$this->middlewares)(...$params);
+        return $this->run($context);
+    }
+
+    public function handle()
+    {
+    }
+
+    private function run(...$params)
+    {
+        $middlewares = $this->middlewares;
+        $middlewares[] = [$this, 'handle'];
+        return co(...$middlewares)(...$params);
     }
 }
