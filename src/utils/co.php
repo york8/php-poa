@@ -106,7 +106,7 @@ function co(...$middlewares)
             } else {
                 $result = $g->getReturn();
                 if ($result === false && $discontinue !== true) {
-                    $discontinue = false;
+                    $discontinue = true;
                 }
                 unset($g);
             }
