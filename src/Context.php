@@ -9,6 +9,7 @@ namespace York8\POA;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
+use React\Promise\Promise;
 
 /**
  * 请求处理过程的上下文对象，中间件接收的输入参数，里面包含了请求、响应对象及一些有用的方法
@@ -21,6 +22,9 @@ class Context
 
     /** @var ResponseInterface 响应对象 */
     private $response;
+
+    /** @var ResponseInterface|Promise 返回对象 */
+    private $return;
 
     /**
      * @var mixed[] 上下文相关的属性参数
@@ -69,6 +73,30 @@ class Context
     public function setResponse(ResponseInterface $response)
     {
         $this->response = $response;
+    }
+
+    /**
+     * @return ResponseInterface|Promise
+     */
+    public function getReturn()
+    {
+        return $this->return ?: $this->response;
+    }
+
+    /**
+     * @param ResponseInterface|Promise $return
+     * @throws \TypeError
+     */
+    public function setReturn($return)
+    {
+        if ($return instanceof ResponseInterface) {
+            $this->return = $return;
+            $this->setResponse($return);
+        } else if ($return instanceof Promise) {
+            $this->return = $return;
+        } else {
+            throw new \TypeError('the $return should be an instance of ResponseInterface or Promise');
+        }
     }
 
     /**

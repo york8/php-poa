@@ -6,12 +6,15 @@
 
 namespace York8\POA;
 
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\NullLogger;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
+use React\Http\HttpBodyStream;
 use React\Http\Response;
 use React\Http\Server;
+use React\Promise\Promise;
 
 class Application
 {
@@ -59,7 +62,7 @@ class Application
     /**
      * 请求处理回调函数
      * @param ServerRequestInterface $request
-     * @return \Psr\Http\Message\ResponseInterface
+     * @return ResponseInterface|Promise
      */
     public function callback(ServerRequestInterface $request)
     {
@@ -67,21 +70,46 @@ class Application
             'Content-Type' => 'text/plain; charset=utf-8',
         ], '');
 
-        try {
-            $context = new Context($request, $response);
-            $context->setLogger($this->getLogger());
-            co(...$this->middlewares)($context);
-            return $context->getResponse();
-        } catch (\Throwable $exception) {
-            // 触发错误异常处理中间件
-            $this->onException($exception, $context);
-            $rsp = $context->getResponse();
-            if ($rsp === $response) {
-                $rsp = $response->withStatus(500);
-                $response->getBody()->write('Internal Server Error');
+        return new Promise(function ($resolve, $reject) use (&$request, &$response) {
+            try {
+                $context = new Context($request, $response);
+                $context->setLogger($this->getLogger());
+
+                /**
+                 * @var HttpBodyStream $body
+                 */
+                $body = $request->getBody();
+                $body->on('data', function ($data) use (&$request, &$context) {
+                    if (!$data) return;
+                    $method = $request->getMethod();
+                    $contentType = $request->getHeader('Content-Type');
+                    if (isset($contentType[0])
+                        && (strcasecmp($method, 'POST') === 0 || strcasecmp($method, 'PUT') === 0)
+                        && strpos(strtolower($contentType[0]), 'application/x-www-form-urlencoded') !== false
+                    ) {
+                        parse_str($data, $parsedBody);
+                        $request = $request->withParsedBody($parsedBody);
+                        $context->setRequest($request);
+                    }
+                });
+                $body->on('end', function () use (&$context, $resolve) {
+                    co(...$this->middlewares)($context);
+                    $resolve($context->getReturn());
+                });
+                $body->on('error', function ($reason) use ($reject) {
+                    $reject($reason);
+                });
+            } catch (\Throwable $exception) {
+                // 触发错误异常处理中间件
+                $this->onException($exception, $context);
+                $rsp = $context->getResponse();
+                if ($rsp === $response) {
+                    $rsp = $response->withStatus(500);
+                    $response->getBody()->write('Internal Server Error');
+                }
+                $resolve($rsp);
             }
-            return $rsp;
-        }
+        });
     }
 
     /**

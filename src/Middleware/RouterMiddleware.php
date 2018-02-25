@@ -6,7 +6,9 @@
 
 namespace York8\POA\Middleware;
 
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use React\Promise\Promise;
 use York8\POA\Context;
 use York8\Router\Router;
 
@@ -35,6 +37,13 @@ class RouterMiddleware extends Router implements MiddlewareInterface
 
         yield;
 
-        $handler($context);
+        $return = $handler($context);
+        if (!$return) {
+            /* do nothing */
+        } else if ($return instanceof ResponseInterface || $return instanceof Promise) {
+            $context->setReturn($return);
+        } else if (is_string($return)) {
+            $context->send($return);
+        }
     }
 }
