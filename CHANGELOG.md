@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.4.1 - 2018-02-28
+请求体保存到 Context 的 attribute 中
+
 ## 0.3.3 - 2018-02-23
 稳定性修改 stable
 

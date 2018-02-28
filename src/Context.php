@@ -252,4 +252,14 @@ class Context
     {
         $this->attributes = $attributes;
     }
+
+    public function setAttribut($name, $value)
+    {
+        $this->attributes[$name] = $value;
+    }
+
+    public function getAttribute($name)
+    {
+        return @$this->attributes[$name];
+    }
 }

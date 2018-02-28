@@ -85,12 +85,18 @@ class Application
                     $contentType = $request->getHeader('Content-Type');
                     if (isset($contentType[0])
                         && (strcasecmp($method, 'POST') === 0 || strcasecmp($method, 'PUT') === 0)
-                        && strpos(strtolower($contentType[0]), 'application/x-www-form-urlencoded') !== false
                     ) {
-                        parse_str($data, $parsedBody);
-                        $request = $request->withParsedBody($parsedBody);
-                        $context->setRequest($request);
+                        if (strpos(strtolower($contentType[0]), 'application/x-www-form-urlencoded') !== false) {
+                            parse_str($data, $parsedBody);
+                            $request = $request->withParsedBody($parsedBody);
+                            $context->setRequest($request);
+                        } else if (strpos(strtolower($contentType[0]), 'application/json') !== false) {
+                            $parsedBody = json_decode($data, JSON_OBJECT_AS_ARRAY);
+                            $request = $request->withParsedBody($parsedBody);
+                            $context->setRequest($request);
+                        }
                     }
+                    $context->setAttribut('httpRawData', $data);
                 });
                 $body->on('end', function () use (&$context, $resolve) {
                     co(...$this->middlewares)($context);
